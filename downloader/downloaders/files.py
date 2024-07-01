@@ -1,33 +1,18 @@
-from abc import ABC, abstractmethod
 from typing import List
-from dataclasses import dataclass
 import os
 import requests
 from concurrent.futures import ThreadPoolExecutor
 from downloader.utils import create_save_directory, get_file_extension, get_sub_directory
+from downloader.status_manager import StatusManager
 
 
-@dataclass
-class URL:
-    url: str
-
-
-class FileDownloaderBase(ABC):
-    @abstractmethod
-    def download_file(self, url: str) -> None:
-        pass
-
-    @abstractmethod
-    def download_files(self, urls: List[URL]) -> None:
-        pass
-
-
-class FileDownloader(FileDownloaderBase):
-    def __init__(self, save_dir: str, max_workers: int = 5):
+class FileDownloader:
+    def __init__(self, save_dir: str, manager: StatusManager, max_workers: int = 5):
         self.save_dir = save_dir
+        self.manager = manager
         self.max_workers = max_workers
 
-    def download_file(self, url: str) -> None:
+    def download_file(self, url: str) -> str:
         try:
             response = requests.get(url)
             file_extension = get_file_extension(url)
@@ -38,11 +23,20 @@ class FileDownloader(FileDownloaderBase):
             with open(file_path, 'wb') as f:
                 f.write(response.content)
             print(f"Downloaded {file_name} successfully to {sub_dir}")
+            return file_name
         except Exception as e:
             print(f"Failed to download {url}. Error: {e}")
+            return None
 
-    def download_files(self, urls: List[URL]) -> None:
+    def download_files(self, urls: List[str]) -> None:
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             for file_url in urls:
-                executor.submit(self.download_file, file_url.url)
+                executor.submit(self._download_and_update_status, file_url)
         print("All files downloaded successfully.")
+
+    def _download_and_update_status(self, url: str) -> None:
+        file_name = self.download_file(url)
+        if file_name:
+            self.manager.update_status(url, file_name, 'Completed')
+        else:
+            self.manager.update_status(url, file_name, 'Failed')

@@ -1,17 +1,15 @@
-from downloader.downloaders.files import FileDownloader, FileDownloaderBase
-from downloader.downloaders.youtube import YouTubeDownloader, YouTubeDownloaderBase
-from downloader.downloaders.instagram import InstagramDownloader, InstagramDownloaderBase
+from downloader.downloaders.files import FileDownloader
+from downloader.downloaders.youtube import YouTubeDownloader
+from downloader.downloaders.instagram import InstagramDownloader
+from downloader.status_manager import StatusManager
 
 
 class DownloaderFactory:
-    @staticmethod
-    def create_file_downloader(save_dir: str, max_workers: int = 5) -> FileDownloaderBase:
-        return FileDownloader(save_dir=save_dir, max_workers=max_workers)
+    def create_file_downloader(self, save_dir: str, manager: StatusManager) -> FileDownloader:
+        return FileDownloader(save_dir=save_dir, manager=manager)
 
-    @staticmethod
-    def create_youtube_downloader(save_dir: str, max_workers: int = 5) -> YouTubeDownloaderBase:
-        return YouTubeDownloader(save_dir=save_dir, max_workers=max_workers)
+    def create_youtube_downloader(self, save_dir: str, manager: StatusManager) -> YouTubeDownloader:
+        return YouTubeDownloader(save_dir=save_dir, manager=manager)
 
-    @staticmethod
-    def create_instagram_downloader(save_dir: str, max_workers: int = 5) -> InstagramDownloaderBase:
-        return InstagramDownloader(save_dir=save_dir, max_workers=max_workers)
+    def create_instagram_downloader(self, save_dir: str, manager: StatusManager) -> InstagramDownloader:
+        return InstagramDownloader(save_dir=save_dir, manager=manager)
