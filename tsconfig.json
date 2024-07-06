@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "compilerOptions": {
     "target": "ESNext",
     "module": "commonjs",
@@ -12,9 +11,7 @@
     "outDir": "dist",
     "moduleResolution": "node",
     "resolveJsonModule": true
-  }
-=======
+  },
   "files": [],
   "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.web.json" }]
->>>>>>> reacreate-electron-base
 }

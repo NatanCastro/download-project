@@ -1,8 +1,27 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
+type Status = {
+  url: string
+  status: string
+}
+
+export interface ApiInterface {
+  addUrl: (url: string) => Promise<void>
+  downloadAll: () => Promise<void>
+  removeUrl: (url: string) => Promise<void>
+  onStatusChange: (callback: (status: Status) => void) => void
+}
+
 // Custom APIs for renderer
-const api = {}
+const api: ApiInterface = {
+  addUrl: (url) => ipcRenderer.invoke('addUrl', url),
+  downloadAll: () => ipcRenderer.invoke('downloadAll'),
+  removeUrl: (url) => ipcRenderer.invoke('removeUrl', url),
+  onStatusChange: (callback) => {
+    ipcRenderer.on('statusChange', (_, status) => callback(status))
+  }
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise

@@ -1,11 +1,15 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+import icon from '../../resources/icon.png'
+import { DownloaderFactory } from './downloader/downloaders/downloader_factory'
+import { DownloadManager } from './downloader/managers/manager'
+
+let mainWindow: BrowserWindow
 
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
@@ -49,12 +53,32 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  createWindow()
+
+  const factory = new DownloaderFactory()
+  const manager = new DownloadManager(factory)
+
+  manager.statusManager.on('statusChange', (status) => {
+    mainWindow.webContents.send('statusChange', status)
+  })
+
+  ipcMain.handle('addUrl', (e, url: string) => {
+    e.preventDefault()
+    manager.addUrl(url)
+  })
+
+  ipcMain.handle('removeUrl', (_, url: string) => {
+    manager.removeDownload(url)
+  })
+
+  ipcMain.handle('downloadAll', () => {
+    manager.downloadAll()
+  })
+
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
-  createWindow()
-
-  app.on('activate', function () {
+  app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
