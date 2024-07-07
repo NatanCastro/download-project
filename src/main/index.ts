@@ -1,7 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png'
+import icon from '../../resources/icon.png?asset'
 import { DownloaderFactory } from './downloader/downloaders/downloader_factory'
 import { DownloadManager } from './downloader/managers/manager'
 
